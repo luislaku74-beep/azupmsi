@@ -51,31 +51,33 @@ if ($adminUsername === false && $adminPassword === false) {
 
     if ($adminUsername === '' || strlen($adminUsername) > 50
         || !is_string($adminPassword) || strlen($adminPassword) < 12) {
-        throw new RuntimeException(
-            'Admin bootstrap requires ADMIN_USERNAME (1-50 characters) and ADMIN_PASSWORD (at least 12 characters).'
+        fwrite(
+            STDERR,
+            "Admin bootstrap skipped: configure ADMIN_USERNAME (1-50 characters) "
+                . "and ADMIN_PASSWORD (at least 12 characters).\n"
         );
-    }
-
-    $userCount = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
-
-    if ($userCount === 0) {
-        $passwordHash = password_hash($adminPassword, PASSWORD_DEFAULT);
-
-        if ($passwordHash === false) {
-            throw new RuntimeException('Could not hash the bootstrap administrator password.');
-        }
-
-        $statement = $pdo->prepare(
-            "INSERT INTO users (full_name, username, password_hash, role, is_active)
-             VALUES ('Administrator', :username, :password_hash, 'admin', 1)"
-        );
-        $statement->execute([
-            'username' => $adminUsername,
-            'password_hash' => $passwordHash,
-        ]);
-
-        fwrite(STDOUT, "Bootstrap administrator created.\n");
     } else {
-        fwrite(STDOUT, "Admin bootstrap skipped: the users table is not empty.\n");
+        $userCount = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+
+        if ($userCount === 0) {
+            $passwordHash = password_hash($adminPassword, PASSWORD_DEFAULT);
+
+            if ($passwordHash === false) {
+                throw new RuntimeException('Could not hash the bootstrap administrator password.');
+            }
+
+            $statement = $pdo->prepare(
+                "INSERT INTO users (full_name, username, password_hash, role, is_active)
+                 VALUES ('Administrator', :username, :password_hash, 'admin', 1)"
+            );
+            $statement->execute([
+                'username' => $adminUsername,
+                'password_hash' => $passwordHash,
+            ]);
+
+            fwrite(STDOUT, "Bootstrap administrator created.\n");
+        } else {
+            fwrite(STDOUT, "Admin bootstrap skipped: the users table is not empty.\n");
+        }
     }
 }
