@@ -1,14 +1,15 @@
 
 <?php
 
-$host = 'localhost';
-$dbname = 'azu_pimsi';
-$dbuser = 'root';
-$dbpass = '';
+$host = getenv('DB_HOST') ?: 'localhost';
+$dbname = getenv('DB_NAME') ?: 'azu_pimsi';
+$dbuser = getenv('DB_USER') ?: 'root';
+$dbpass = getenv('DB_PASSWORD') ?: '';
+$dbport = getenv('DB_PORT') ?: '3306';
 
 try {
     $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
+        "mysql:host=$host;port=$dbport;dbname=$dbname;charset=utf8mb4",
         $dbuser,
         $dbpass,
         [
