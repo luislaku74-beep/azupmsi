@@ -83,7 +83,7 @@ $where = [];
 $params = [];
 
 if ($search !== '') {
-    $where[] = 'username LIKE :search';
+    $where[] = 'LOWER(username) LIKE LOWER(:search)';
     $params['search'] = '%' . $search . '%';
 }
 

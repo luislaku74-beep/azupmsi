@@ -267,9 +267,9 @@ $sql = 'SELECT * FROM medicines';
 $params = [];
 
 if ($search !== '') {
-    $sql .= " WHERE medicine_name LIKE :name
-              OR generic_name LIKE :generic
-              OR category LIKE :category";
+    $sql .= " WHERE LOWER(medicine_name) LIKE LOWER(:name)
+              OR LOWER(generic_name) LIKE LOWER(:generic)
+              OR LOWER(category) LIKE LOWER(:category)";
 
     $term = '%' . $search . '%';
 
@@ -300,17 +300,26 @@ $lowStock = (int)$pdo->query(
      WHERE quantity_in_stock <= reorder_level'
 )->fetchColumn();
 
-$expired = (int)$pdo->query(
+$today = date('Y-m-d');
+$in90Days = date('Y-m-d', strtotime('+90 days'));
+
+$expiredStmt = $pdo->prepare(
     'SELECT COUNT(*) FROM medicines
      WHERE expiry_date IS NOT NULL
-       AND expiry_date < CURDATE()'
-)->fetchColumn();
+       AND expiry_date < :today'
+);
+$expiredStmt->execute(['today' => $today]);
+$expired = (int)$expiredStmt->fetchColumn();
 
-$expiringSoon = (int)$pdo->query(
+$expiringSoonStmt = $pdo->prepare(
     'SELECT COUNT(*) FROM medicines
-     WHERE expiry_date BETWEEN CURDATE()
-       AND DATE_ADD(CURDATE(), INTERVAL 90 DAY)'
-)->fetchColumn();
+     WHERE expiry_date BETWEEN :today AND :in_90_days'
+);
+$expiringSoonStmt->execute([
+    'today' => $today,
+    'in_90_days' => $in90Days
+]);
+$expiringSoon = (int)$expiringSoonStmt->fetchColumn();
 
 $form = $editMedicine ?: [
     'id' => '',

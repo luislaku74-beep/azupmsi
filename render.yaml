@@ -1,22 +1,4 @@
 services:
-  - type: pserv
-    name: azupimsi-db
-    runtime: docker
-    dockerfilePath: ./Dockerfile.mysql
-    disk:
-      name: azupimsi-db-data
-      mountPath: /var/lib/mysql
-      sizeGB: 10
-    envVars:
-      - key: MYSQL_DATABASE
-        value: azu_pimsi
-      - key: MYSQL_USER
-        value: azu_pimsi_app
-      - key: MYSQL_PASSWORD
-        generateValue: true
-      - key: MYSQL_ROOT_PASSWORD
-        generateValue: true
-
   - type: web
     name: azupimsi
     runtime: docker
@@ -24,21 +6,33 @@ services:
     plan: free
     envVars:
       - key: DB_HOST
-        fromService:
-          type: pserv
+        fromDatabase:
           name: azupimsi-db
           property: host
       - key: DB_PORT
-        fromService:
-          type: pserv
+        fromDatabase:
           name: azupimsi-db
           property: port
       - key: DB_NAME
-        value: azu_pimsi
-      - key: DB_USER
-        value: azu_pimsi_app
-      - key: DB_PASSWORD
-        fromService:
-          type: pserv
+        fromDatabase:
           name: azupimsi-db
-          envVarKey: MYSQL_PASSWORD
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: azupimsi-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: azupimsi-db
+          property: password
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_SSLMODE
+        value: require
+
+databases:
+  - name: azupimsi-db
+    databaseName: azu_pimsi
+    user: azupimsi
+    plan: free
+    postgresMajorVersion: "17"

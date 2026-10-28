@@ -193,10 +193,10 @@ try {
             INNER JOIN patients p ON p.id = mr.patient_id';
 
     if ($search !== '') {
-        $sql .= ' WHERE p.patient_number LIKE :s1
-                    OR p.first_name LIKE :s2
-                    OR p.last_name LIKE :s3
-                    OR mr.diagnosis LIKE :s4';
+        $sql .= ' WHERE LOWER(p.patient_number) LIKE LOWER(:s1)
+                    OR LOWER(p.first_name) LIKE LOWER(:s2)
+                    OR LOWER(p.last_name) LIKE LOWER(:s3)
+                    OR LOWER(mr.diagnosis) LIKE LOWER(:s4)';
     }
 
     $sql .= ' ORDER BY mr.visit_date DESC, mr.id DESC LIMIT 200';
@@ -222,11 +222,13 @@ try {
         'SELECT COUNT(*) FROM medical_records'
     )->fetchColumn();
 
-    $followUpCount = (int) $pdo->query(
+    $followUpStmt = $pdo->prepare(
         'SELECT COUNT(*)
          FROM medical_records
-         WHERE follow_up_date >= CURDATE()'
-    )->fetchColumn();
+         WHERE follow_up_date >= :today'
+    );
+    $followUpStmt->execute(['today' => date('Y-m-d')]);
+    $followUpCount = (int) $followUpStmt->fetchColumn();
 
 } catch (PDOException $e) {
     error_log('Medical records search error: ' . $e->getMessage());

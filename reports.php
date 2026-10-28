@@ -90,12 +90,13 @@ $lowStock = fetchCount(
      WHERE quantity_in_stock <= reorder_level'
 );
 
-$expiredMedicines = fetchCount(
-    $pdo,
+$expiredMedicinesStmt = $pdo->prepare(
     'SELECT COUNT(*) FROM medicines
      WHERE expiry_date IS NOT NULL
-       AND expiry_date < CURDATE()'
+       AND expiry_date < :today'
 );
+$expiredMedicinesStmt->execute(['today' => date('Y-m-d')]);
+$expiredMedicines = (int)$expiredMedicinesStmt->fetchColumn();
 
 /* -------------------- APPOINTMENTS -------------------- */
 $stmt = $pdo->prepare(
@@ -192,13 +193,17 @@ $lowStockMedicines = $pdo->query(
 )->fetchAll(PDO::FETCH_ASSOC);
 
 /* -------------------- EXPIRY ALERTS -------------------- */
-$expiryMedicines = $pdo->query(
+$expiryMedicinesStmt = $pdo->prepare(
     'SELECT medicine_name, quantity_in_stock, unit, expiry_date
      FROM medicines
      WHERE expiry_date IS NOT NULL
-       AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 90 DAY)
+       AND expiry_date <= :in_90_days
      ORDER BY expiry_date ASC'
-)->fetchAll(PDO::FETCH_ASSOC);
+);
+$expiryMedicinesStmt->execute([
+    'in_90_days' => date('Y-m-d', strtotime('+90 days'))
+]);
+$expiryMedicines = $expiryMedicinesStmt->fetchAll(PDO::FETCH_ASSOC);
 
 /* -------------------- APPOINTMENT DETAILS -------------------- */
 $stmt = $pdo->prepare(

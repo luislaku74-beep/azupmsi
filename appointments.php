@@ -238,10 +238,10 @@ try {
             INNER JOIN patients p ON p.id = a.patient_id';
 
     if ($search !== '') {
-        $sql .= ' WHERE p.patient_number LIKE :s1
-                    OR p.first_name LIKE :s2
-                    OR p.last_name LIKE :s3
-                    OR a.doctor_name LIKE :s4';
+        $sql .= ' WHERE LOWER(p.patient_number) LIKE LOWER(:s1)
+                    OR LOWER(p.first_name) LIKE LOWER(:s2)
+                    OR LOWER(p.last_name) LIKE LOWER(:s3)
+                    OR LOWER(a.doctor_name) LIKE LOWER(:s4)';
     }
 
     $sql .= ' ORDER BY a.appointment_date DESC,

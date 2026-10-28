@@ -50,6 +50,9 @@ $expiring90 = 0;
 |--------------------------------------------------------------------------
 */
 $filter = $_GET['filter'] ?? 'all';
+$today = date('Y-m-d');
+$in30Days = date('Y-m-d', strtotime('+30 days'));
+$in90Days = date('Y-m-d', strtotime('+90 days'));
 
 $allowedFilters = [
     'all',
@@ -86,26 +89,37 @@ try {
          WHERE quantity_in_stock = 0'
     )->fetchColumn();
 
-    $expired = (int)$pdo->query(
+    $expiredStmt = $pdo->prepare(
         'SELECT COUNT(*)
          FROM medicines
          WHERE expiry_date IS NOT NULL
-           AND expiry_date < CURDATE()'
-    )->fetchColumn();
+           AND expiry_date < :today'
+    );
+    $expiredStmt->execute(['today' => $today]);
+    $expired = (int)$expiredStmt->fetchColumn();
 
-    $expiring30 = (int)$pdo->query(
+    $expiring30Stmt = $pdo->prepare(
         'SELECT COUNT(*)
          FROM medicines
-         WHERE expiry_date BETWEEN CURDATE()
-           AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)'
-    )->fetchColumn();
+         WHERE expiry_date BETWEEN :today AND :in_30_days'
+    );
+    $expiring30Stmt->execute([
+        'today' => $today,
+        'in_30_days' => $in30Days
+    ]);
+    $expiring30 = (int)$expiring30Stmt->fetchColumn();
 
-    $expiring90 = (int)$pdo->query(
+    $expiring90Stmt = $pdo->prepare(
         'SELECT COUNT(*)
          FROM medicines
-         WHERE expiry_date > DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-           AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 90 DAY)'
-    )->fetchColumn();
+         WHERE expiry_date > :in_30_days
+           AND expiry_date <= :in_90_days'
+    );
+    $expiring90Stmt->execute([
+        'in_30_days' => $in30Days,
+        'in_90_days' => $in90Days
+    ]);
+    $expiring90 = (int)$expiring90Stmt->fetchColumn();
 
     /*
     |--------------------------------------------------------------------------
@@ -138,17 +152,22 @@ try {
 
         case 'expired':
             $conditions[] = 'expiry_date IS NOT NULL';
-            $conditions[] = 'expiry_date < CURDATE()';
+            $conditions[] = 'expiry_date < :today_filter';
+            $params['today_filter'] = $today;
             break;
 
         case 'expiring30':
-            $conditions[] = 'expiry_date BETWEEN CURDATE()
-                AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)';
+            $conditions[] = 'expiry_date BETWEEN :today_filter
+                AND :in_30_days_filter';
+            $params['today_filter'] = $today;
+            $params['in_30_days_filter'] = $in30Days;
             break;
 
         case 'expiring90':
-            $conditions[] = 'expiry_date > DATE_ADD(CURDATE(), INTERVAL 30 DAY)';
-            $conditions[] = 'expiry_date <= DATE_ADD(CURDATE(), INTERVAL 90 DAY)';
+            $conditions[] = 'expiry_date > :in_30_days_filter';
+            $conditions[] = 'expiry_date <= :in_90_days_filter';
+            $params['in_30_days_filter'] = $in30Days;
+            $params['in_90_days_filter'] = $in90Days;
             break;
 
         default:
@@ -156,9 +175,10 @@ try {
                 quantity_in_stock <= reorder_level
                 OR (
                     expiry_date IS NOT NULL
-                    AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 90 DAY)
+                    AND expiry_date <= :in_90_days_filter
                 )
             )';
+            $params['in_90_days_filter'] = $in90Days;
             break;
     }
 
@@ -169,16 +189,22 @@ try {
     $sql .= " ORDER BY
                 CASE
                     WHEN expiry_date IS NOT NULL
-                         AND expiry_date < CURDATE() THEN 1
+                         AND expiry_date < :today_sort THEN 1
                     WHEN quantity_in_stock = 0 THEN 2
                     WHEN quantity_in_stock <= reorder_level THEN 3
-                    WHEN expiry_date BETWEEN CURDATE()
-                         AND DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 4
-                    WHEN expiry_date > DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-                         AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 90 DAY) THEN 5
+                    WHEN expiry_date BETWEEN :today_sort_30
+                         AND :in_30_days_sort THEN 4
+                    WHEN expiry_date > :in_30_days_sort_90
+                         AND expiry_date <= :in_90_days_sort THEN 5
                     ELSE 6
                 END,
                 medicine_name ASC";
+
+    $params['today_sort'] = $today;
+    $params['today_sort_30'] = $today;
+    $params['in_30_days_sort'] = $in30Days;
+    $params['in_30_days_sort_90'] = $in30Days;
+    $params['in_90_days_sort'] = $in90Days;
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);

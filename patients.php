@@ -149,9 +149,9 @@ try {
             'SELECT id, patient_number, first_name, last_name,
                     gender, phone, created_at
              FROM patients
-             WHERE patient_number LIKE :s1
-                OR first_name LIKE :s2
-                OR last_name LIKE :s3
+             WHERE LOWER(patient_number) LIKE LOWER(:s1)
+                OR LOWER(first_name) LIKE LOWER(:s2)
+                OR LOWER(last_name) LIKE LOWER(:s3)
              ORDER BY id DESC
              LIMIT 100'
         );
