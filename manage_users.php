@@ -180,7 +180,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (PDOException $e) {
             error_log('User management error: ' . $e->getMessage());
 
-            if ($e->getCode() === '23000') {
+            $sqlState = (string)$e->getCode();
+
+            if ($sqlState === '23000' || $sqlState === '23505') {
                 $message = 'That username already exists. Choose a different username.';
             } else {
                 $message = 'A database error occurred. Please check the server error log.';
@@ -567,7 +569,7 @@ td strong { color: var(--text); }
                 <div class="field">
                     <label for="username">Username</label>
                     <input id="username" name="username" maxlength="50"
-                           pattern="[a-zA-Z0-9_.-]+" autocomplete="off" required>
+                           pattern="[a-zA-Z0-9_.\-]+" autocomplete="off" required>
                     <span class="hint">Letters, numbers, dots, underscores and hyphens.</span>
                 </div>
 
