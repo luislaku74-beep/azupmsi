@@ -29,6 +29,10 @@ services:
         value: pgsql
       - key: DB_SSLMODE
         value: require
+      - key: ADMIN_USERNAME
+        value: boli
+      - key: ADMIN_PASSWORD
+        sync: false
 
 databases:
   - name: azupimsi-db
