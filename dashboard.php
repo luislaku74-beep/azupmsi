@@ -9,6 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $role = $_SESSION['role'] ?? '';
+$roleLabel = $role === 'admin' ? 'Administrator' : ucfirst($role);
 $name = $_SESSION['full_name'] ?? 'Staff Member';
 
 if (!in_array($role, ['admin', 'clinician', 'pharmacy', 'receptionist'], true)) {
@@ -569,7 +570,7 @@ function h($value) {
     <section class="welcome-banner">
         <div class="eyebrow">Africa Zeal University Clinic</div>
 
-        <h1>Welcome back, <?= h($name) ?>!</h1>
+        <h1>Welcome back, <?= h($roleLabel) ?>!</h1>
 
         <p>
             Manage clinic operations, patient information, appointments,
