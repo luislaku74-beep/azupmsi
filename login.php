@@ -1,5 +1,6 @@
 <?php
 
+session_start();
 require_once __DIR__ . '/toast.php';
 require_once __DIR__ . '/db.php';
 
