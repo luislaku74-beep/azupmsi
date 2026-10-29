@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/toast.php';
 
 // Only administrators may manage user accounts.
 if (!isset($_SESSION['user_id'])) {
@@ -222,6 +223,7 @@ foreach ($users as $user) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>User Management | AZU Clinic PIMS</title>
+<link rel="stylesheet" href="toast.css">
 
 <style>
 :root {
@@ -400,65 +402,6 @@ body {
     margin-top: 18px;
 }
 
-.message {
-    position: fixed;
-    z-index: 1000;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    width: min(420px, calc(100vw - 32px));
-    padding: 16px 18px;
-    border: 1px solid transparent;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px #17205f26;
-    line-height: 1.5;
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 180ms ease, transform 180ms ease, visibility 180ms;
-}
-
-.message.is-dismissed {
-    visibility: hidden;
-    opacity: 0;
-    transform: translateY(-8px);
-    pointer-events: none;
-}
-
-.message.success {
-    background: #e7f7ef;
-    color: #17633c;
-    border-color: #b7e5ca;
-}
-
-.message.error {
-    background: #fff0ef;
-    color: #a52820;
-    border-color: #f3c4bf;
-}
-
-.message-text {
-    flex: 1;
-}
-
-.message-close {
-    flex: 0 0 auto;
-    border: 0;
-    padding: 0;
-    background: transparent;
-    color: inherit;
-    font-size: 21px;
-    line-height: 1;
-    cursor: pointer;
-    opacity: 0.75;
-}
-
-.message-close:hover,
-.message-close:focus-visible {
-    opacity: 1;
-}
-
 .table-wrap { overflow-x: auto; }
 
 table {
@@ -549,12 +492,18 @@ td strong { color: var(--text); }
     .container { padding: 0 14px 30px; }
     .panel { padding: 17px; }
     .page-heading h1 { font-size: 25px; }
-    .message { top: 12px; right: 12px; }
 }
 </style>
 </head>
 
 <body>
+<?php
+renderToastMessages(
+    $message !== ''
+        ? [['message' => $message, 'type' => $messageType]]
+        : []
+);
+?>
 
 <header class="topbar">
     <div class="brand">
@@ -574,15 +523,6 @@ td strong { color: var(--text); }
         <h1>User Management</h1>
         <p>Create staff accounts, assign access roles and manage account status.</p>
     </div>
-
-    <?php if ($message !== ''): ?>
-        <div class="message <?= h($messageType) ?>"
-             role="<?= $messageType === 'error' ? 'alert' : 'status' ?>"
-             aria-live="<?= $messageType === 'error' ? 'assertive' : 'polite' ?>">
-            <span class="message-text"><?= h($message) ?></span>
-            <button class="message-close" type="button" aria-label="Dismiss notification">&times;</button>
-        </div>
-    <?php endif; ?>
 
     <section class="summary">
         <div class="summary-card">
@@ -748,16 +688,6 @@ td strong { color: var(--text); }
     </footer>
 
 </main>
-<?php if ($message !== ''): ?>
-<script>
-(() => {
-    const toast = document.querySelector('.message');
-    const dismiss = () => toast.classList.add('is-dismissed');
-
-    toast.querySelector('.message-close').addEventListener('click', dismiss);
-    window.setTimeout(dismiss, 6000);
-})();
-</script>
-<?php endif; ?>
+<script src="toast.js" defer></script>
 </body>
 </html>

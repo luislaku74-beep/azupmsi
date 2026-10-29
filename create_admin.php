@@ -1,5 +1,6 @@
 <?php
 require_once 'db.php';
+require_once __DIR__ . '/toast.php';
 
 $message = '';
 
@@ -54,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Create Administrator - AZU PIMS</title>
+    <link rel="stylesheet" href="toast.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -94,14 +96,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
+<?php
+renderToastMessages(
+    $message !== ''
+        ? [[
+            'message' => $message,
+            'type' => strpos($message, 'Administrator account created') === 0
+                ? 'success'
+                : 'error'
+        ]]
+        : []
+);
+?>
 <div class="container">
     <h2>AZU PIMS Administrator Setup</h2>
-
-    <?php if ($message !== ''): ?>
-        <p class="message">
-            <?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?>
-        </p>
-    <?php endif; ?>
 
     <?php if ($count === 0 && strpos($message, 'Administrator account created') === false): ?>
         <form method="POST">
@@ -123,5 +131,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     <?php endif; ?>
 </div>
+<script src="toast.js" defer></script>
 </body>
 </html>

@@ -8,6 +8,7 @@ RUN apt-get update \
 WORKDIR /var/www/html
 COPY *.php ./
 COPY style.css azu-logo.png ./
+COPY toast.css toast.js ./
 COPY database /opt/azu_pimsi/database
 COPY db_connection.php /opt/azu_pimsi/db_connection.php
 

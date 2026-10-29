@@ -1,6 +1,6 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/toast.php';
 require_once __DIR__ . '/db.php';
 
 /**
@@ -143,8 +143,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | AZU Clinic PIMS</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="toast.css">
 </head>
 <body>
+<?php
+renderToastMessages(
+    $error !== '' ? [['message' => $error, 'type' => 'error']] : []
+);
+?>
 
 <div class="login-container">
     <div class="login-card">
@@ -161,12 +167,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p class="description">
             Sign in to access the clinic system.
         </p>
-
-        <?php if ($error !== ''): ?>
-            <div class="error-message">
-                <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
-            </div>
-        <?php endif; ?>
 
         <form method="POST" action="login.php">
             <input
@@ -208,5 +208,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
+<script src="toast.js" defer></script>
 </body>
 </html>

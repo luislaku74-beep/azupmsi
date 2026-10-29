@@ -3,6 +3,7 @@ session_start();
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/audit_helper.php';
+require_once __DIR__ . '/toast.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -227,6 +228,7 @@ function editPatientEscape($value): string
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Edit Patient | AZU Clinic PIMS</title>
+    <link rel="stylesheet" href="toast.css">
 
     <style>
         :root {
@@ -387,6 +389,16 @@ function editPatientEscape($value): string
     </style>
 </head>
 <body>
+<?php
+$toastMessages = [];
+if ($success !== '') {
+    $toastMessages[] = ['message' => $success, 'type' => 'success'];
+}
+if ($error !== '') {
+    $toastMessages[] = ['message' => $error, 'type' => 'error'];
+}
+renderToastMessages($toastMessages);
+?>
 
 <header class="topbar">
     <div class="brand">
@@ -409,18 +421,6 @@ function editPatientEscape($value): string
             Patient Number:
             <?= editPatientEscape($patient['patient_number']) ?>
         </div>
-
-        <?php if ($success !== ''): ?>
-            <div class="message success">
-                <?= editPatientEscape($success) ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($error !== ''): ?>
-            <div class="message error">
-                <?= editPatientEscape($error) ?>
-            </div>
-        <?php endif; ?>
 
         <form method="post"
               action="edit_patient.php?id=<?= (int) $patientId ?>">
@@ -508,5 +508,6 @@ function editPatientEscape($value): string
     </section>
 </main>
 
+<script src="toast.js" defer></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/toast.php';
 
 // --------------------------------------------------
 // 1. SESSION AND ROLE PROTECTION
@@ -291,6 +292,7 @@ try {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Appointments | AZU Clinic PIMS</title>
+<link rel="stylesheet" href="toast.css">
 
 <style>
 :root {
@@ -698,6 +700,16 @@ tbody tr:last-child td { border-bottom: none; }
 </head>
 
 <body>
+<?php
+$toastMessages = [];
+if ($success !== '') {
+    $toastMessages[] = ['message' => $success, 'type' => 'success'];
+}
+if ($error !== '') {
+    $toastMessages[] = ['message' => $error, 'type' => 'error'];
+}
+renderToastMessages($toastMessages);
+?>
 
 <header class="topbar">
     <div class="brand">
@@ -749,14 +761,6 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
         </div>
     </section>
-
-    <?php if ($success !== ''): ?>
-        <div class="message success"><?= h($success) ?></div>
-    <?php endif; ?>
-
-    <?php if ($error !== ''): ?>
-        <div class="message error"><?= h($error) ?></div>
-    <?php endif; ?>
 
     <section class="panel">
         <div class="panel-heading">
@@ -941,5 +945,6 @@ tbody tr:last-child td { border-bottom: none; }
     </footer>
 
 </main>
+<script src="toast.js" defer></script>
 </body>
 </html>

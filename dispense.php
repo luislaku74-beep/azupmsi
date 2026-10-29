@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/toast.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -268,6 +269,7 @@ $history = $pdo->query(
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Medicine Dispensing | AZU Clinic PIMS</title>
+    <link rel="stylesheet" href="toast.css">
 
     <style>
         :root {
@@ -739,6 +741,16 @@ $history = $pdo->query(
 </head>
 
 <body>
+<?php
+$toastMessages = [];
+if ($message !== '') {
+    $toastMessages[] = ['message' => $message, 'type' => 'success'];
+}
+if ($error !== '') {
+    $toastMessages[] = ['message' => $error, 'type' => 'error'];
+}
+renderToastMessages($toastMessages);
+?>
 
 <header class="topbar">
     <div class="brand">
@@ -784,18 +796,6 @@ $history = $pdo->query(
         quantity, prescription instructions, available stock, and expiry
         date before dispensing.
     </div>
-
-    <?php if ($message !== ''): ?>
-        <div class="notice success" role="status">
-            <?= e($message) ?>
-        </div>
-    <?php endif; ?>
-
-    <?php if ($error !== ''): ?>
-        <div class="notice error" role="alert">
-            <?= e($error) ?>
-        </div>
-    <?php endif; ?>
 
     <section class="panel dispense-form-panel">
         <div class="panel-heading">
@@ -1024,5 +1024,6 @@ $history = $pdo->query(
 
 </main>
 
+<script src="toast.js" defer></script>
 </body>
 </html>

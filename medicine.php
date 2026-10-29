@@ -2,6 +2,7 @@
 session_start();
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/toast.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -340,6 +341,7 @@ $form = $editMedicine ?: [
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Medicine Inventory | AZU Clinic PIMS</title>
+    <link rel="stylesheet" href="toast.css">
 
     <style>
         :root {
@@ -894,6 +896,16 @@ $form = $editMedicine ?: [
 </head>
 
 <body>
+<?php
+$toastMessages = [];
+if ($message !== '') {
+    $toastMessages[] = ['message' => $message, 'type' => 'success'];
+}
+if ($error !== '') {
+    $toastMessages[] = ['message' => $error, 'type' => 'error'];
+}
+renderToastMessages($toastMessages);
+?>
 
 <header class="topbar">
     <div class="brand">
@@ -935,18 +947,6 @@ $form = $editMedicine ?: [
         Authorized staff only. Check medicine expiry dates and stock levels
         before dispensing medicines.
     </div>
-
-    <?php if ($message !== ''): ?>
-        <div class="notice success" role="status">
-            <?= e($message) ?>
-        </div>
-    <?php endif; ?>
-
-    <?php if ($error !== ''): ?>
-        <div class="notice error" role="alert">
-            <?= e($error) ?>
-        </div>
-    <?php endif; ?>
 
     <section class="stats" aria-label="Inventory summary">
         <div class="stat-card">
@@ -1251,5 +1251,6 @@ $form = $editMedicine ?: [
 
 </main>
 
+<script src="toast.js" defer></script>
 </body>
 </html>

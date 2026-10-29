@@ -2,6 +2,7 @@
 session_start();
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/toast.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -237,6 +238,7 @@ $pageTitle = $filterLabels[$filter];
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Medicine Alerts | AZU Clinic PIMS</title>
+    <link rel="stylesheet" href="toast.css">
 
     <style>
         :root {
@@ -759,6 +761,13 @@ $pageTitle = $filterLabels[$filter];
 </head>
 
 <body>
+<?php
+$toastMessages = [];
+if ($error !== '') {
+    $toastMessages[] = ['message' => $error, 'type' => 'error'];
+}
+renderToastMessages($toastMessages);
+?>
 
 <header class="topbar">
     <div class="brand">
@@ -815,11 +824,7 @@ $pageTitle = $filterLabels[$filter];
         </button>
     </div>
 
-    <?php if ($error !== ''): ?>
-        <div class="notice error" role="alert">
-            <?= e($error) ?>
-        </div>
-    <?php else: ?>
+    <?php if ($error === ''): ?>
 
         <section class="stats" aria-label="Medicine alert summary">
 
@@ -1037,5 +1042,6 @@ $pageTitle = $filterLabels[$filter];
 
 </main>
 
+<script src="toast.js" defer></script>
 </body>
 </html>
